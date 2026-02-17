@@ -48,6 +48,27 @@ app.post('/upload', upload.single('photo'), (req, res) => {
   }
 });
 
+// Endpoint para obtener todas las imágenes
+app.get('/images', (req, res) => {
+  try {
+    const files = fs.readdirSync(uploadsPath);
+
+    const urls = files.map(file => ({
+      file,
+      url: `${req.protocol}://${req.get('host')}/uploads/${file}`
+    }));
+
+    res.json({
+      total: urls.length,
+      images: urls
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
