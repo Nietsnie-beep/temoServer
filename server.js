@@ -8,14 +8,19 @@ const app = express();
 app.use(cors());
 
 // Crear carpeta uploads si no existe
-if (!fs.existsSync('uploads')) {
-  fs.mkdirSync('uploads');
+const uploadsPath = path.join(__dirname, 'uploads');
+
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath);
 }
+
+// 👇 ESTA ES LA LÍNEA QUE TE FALTABA
+app.use('/uploads', express.static(uploadsPath));
 
 // Configuración de almacenamiento
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/');
+    cb(null, uploadsPath);
   },
   filename: function (req, file, cb) {
     const uniqueName = Date.now() + '-' + file.originalname;
@@ -34,7 +39,8 @@ app.post('/upload', upload.single('photo'), (req, res) => {
 
     res.json({
       message: 'Imagen subida correctamente',
-      file: req.file.filename
+      file: req.file.filename,
+      url: `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
     });
 
   } catch (error) {
